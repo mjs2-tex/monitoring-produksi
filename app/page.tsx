@@ -12,7 +12,7 @@ moment.locale('id'); // Setel agar menggunakan bahasa Indonesia secara global
 export default function Home() {
 
   return (
-    <div className="w-full h-[calc(100vh-70px)] flex p-4 gap-2">
+    <div className="w-full h-[calc(100vh-70px)] flex p-2 gap-2">
 
       {/* Kolom 1: QC FAILED */}
       <div className="w-[33%] bg-white rounded-2xl border border-slate-200 p-5 flex flex-col shadow-sm">

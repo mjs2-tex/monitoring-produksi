@@ -100,7 +100,7 @@ const CurrentWorkMesin = () => {
                         {table.getRowModel().rows.map(row => (
                             <tr key={row.id} className="border-b border-slate-50 hover:bg-blue-50/30 transition-colors">
                                 {row.getVisibleCells().map(cell => (
-                                    <td key={cell.id} className="p-1 py-2 font-medium">
+                                    <td key={cell.id} className="p-1 py-1 font-medium">
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>
                                 ))}
