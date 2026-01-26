@@ -10,7 +10,7 @@ import {
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import BaruEditModalDyeing from "./modal/BaruEditModalDyeing";
+import BaruEditModalCWR from "./modal/BaruEditModalCWR";
 
 type PlanningMaster = {
   kode_planning: string;
@@ -35,7 +35,7 @@ export default function PlanningPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/planning?type=DYEING");
+      const res = await fetch("/api/planning?type=CWR");
       const json = await res.json();
       setData(json.data || []);
     } catch (error) {
@@ -105,16 +105,16 @@ export default function PlanningPage() {
   return (
     <div className="w-full h-[calc(100vh-70px)] flex flex-col p-4 gap-2 bg-slate-50 text-slate-800">
       {showModal && (
-        <BaruEditModalDyeing
+        <BaruEditModalCWR
           isOpen={showModal}
           onClose={() => {setShowModal(false); setMasterData([]);}}
-          title="Tambah Data Planning Dyeing"
+          title="Tambah Data Planning CWR"
           masterState={masterState}
           masterData={masterData}
           fetchData={fetchData}
         />
       )}
-      <h2 className="text-2xl font-bold italic">| Planning Dyeing</h2>
+      <h2 className="text-2xl font-bold italic">| Planning CWR</h2>
       
       <div className="w-full h-full bg-white rounded-2xl border border-slate-200 p-5 flex flex-col shadow-sm overflow-hidden">
         

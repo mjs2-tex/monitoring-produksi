@@ -2,45 +2,6 @@ import { NextResponse } from "next/server";
 import { poolSecond } from "@/lib/db"; // Sesuaikan path ke file pool Anda
 import moment from "moment";
 
-export async function GET(request: Request) {
-  try {
-    // 1. Ambil parameter 'type' dari URL
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type");
-
-    let query = `SELECT * FROM tb_m_planning`;
-    let queryParams: any[] = [];
-
-    // 2. Kondisi: Jika ada parameter 'type', tambahkan klausa WHERE
-    if (type) {
-      query += ` WHERE kode_planning LIKE $1`;
-      queryParams.push(`%${type}%`);
-    }
-
-    // 3. Tambahkan ORDER BY di akhir
-    query += ` ORDER BY tgl_dokumen DESC`;
-
-    const result = await poolSecond.query(query, queryParams);
-
-    // Mapping data (Koreksi waktu +7 jam untuk WIB)
-    const modData = result.rows.map((item: any) => ({
-      ...item,
-      tgl_planning_awal: item.tgl_planning_awal 
-        ? moment(item.tgl_planning_awal).add(7, 'hours').format("DD-MM-YYYY") 
-        : null,
-      tgl_planning_akhir: item.tgl_planning_akhir 
-        ? moment(item.tgl_planning_akhir).add(7, 'hours').format("DD-MM-YYYY") 
-        : null,
-      tgl_dokumen: item.tgl_dokumen 
-        ? moment(item.tgl_dokumen).add(7, 'hours').format("DD-MM-YYYY HH:mm") 
-        : null,
-    }));
-
-    return NextResponse.json({ data: modData }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
 
 export async function POST(req: Request) {
   // Ambil satu client dari pool untuk menjalankan transaksi
@@ -81,28 +42,29 @@ export async function POST(req: Request) {
     for (const item of details) {
       const detailQuery = `
         INSERT INTO tb_d_planning (
-          id, kode_planning, buyer, item, td, batch, 
-          qty, warna, proses, roda, berat_kain, ex, tgl_planning, mesin, kode_greige, urutan
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);
+          id, kode_planning, wo_ref, buyer, kode_greige, item, 
+          batch, qty, uom, warna, tube, act_qty, no_mesin, no_roda, tgl_planning, urutan, keterangan
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17);
       `;
 
       const detailValues = [
-        item.id_temp, // Anda mengirimkan ID dari frontend
-        header.kode_planning,
+        item.id_temp,
+        item.kode_planning,
+        item.wo_ref,
         item.buyer,
+        item.kode_greige,
         item.item,
-        item.td,
         item.batch,
         item.qty,
+        item.uom,
         item.warna,
-        item.proses,
-        item.roda,
-        item.berat_kain,
-        item.ex,
-        moment(item.tgl_planning, "YYYY-MM-DD").toDate(),
-        item.mesin,
-        item.kode_greige,
-        item.urutan
+        item.tube,
+        item.act_qty,
+        item.no_mesin,
+        item.no_roda,
+        item.tgl_planning,
+        item.urutan,
+        item.keterangan
       ];
 
       await client.query(detailQuery, detailValues);
@@ -119,7 +81,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     // ROLLBACK jika terjadi error di tengah jalan (Data batal masuk semua)
     await client.query('ROLLBACK');
-    console.error("Database Error:", error.message);
+    console.error("Database Error:", error);
 
     return NextResponse.json({
       message: "Database Error: " + error.message
@@ -182,28 +144,29 @@ export async function PUT(req: Request) {
     for (const item of details) {
       const detailQuery = `
         INSERT INTO tb_d_planning (
-          id, kode_planning, buyer, item, td, batch, 
-          qty, warna, proses, roda, berat_kain, ex, tgl_planning, mesin, kode_greige, urutan
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);
+          id, kode_planning, wo_ref, buyer, kode_greige, item, 
+          batch, qty, uom, warna, tube, act_qty, no_mesin, no_roda, tgl_planning, urutan, keterangan
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       `;
 
       const detailValues = [
-        item.id_temp || item.id, // Gunakan id_temp atau id asli jika sudah ada
-        header.kode_planning,
+        item.id_temp,
+        item.kode_planning,
+        item.wo_ref,
         item.buyer,
+        item.kode_greige,
         item.item,
-        item.td,
         item.batch,
         item.qty,
+        item.uom,
         item.warna,
-        item.proses,
-        item.roda,
-        item.berat_kain,
-        item.ex,
-        moment(item.tgl_planning, "YYYY-MM-DD").toDate(),
-        item.mesin,
-        item.kode_greige,
-        item.urutan
+        item.tube,
+        item.act_qty,
+        item.no_mesin,
+        item.no_roda,
+        item.tgl_planning,
+        item.urutan,
+        item.keterangan
       ];
 
       await client.query(detailQuery, detailValues);
@@ -218,7 +181,7 @@ export async function PUT(req: Request) {
 
   } catch (error: any) {
     await client.query('ROLLBACK');
-    console.error("Database Update Error:", error.message);
+    console.error("Database Update Error:", error);
 
     return NextResponse.json({
       message: "Database Error: " + error.message

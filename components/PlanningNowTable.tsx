@@ -13,7 +13,7 @@ import axios from "axios";
 
 // 1. Fetcher Functions
 const fetchPlanningToday = async () => {
-  const response = await axios.get("/api/planning/filter?type=DYEING");
+  const response = await axios.get("/api/planning/filter");
   return response.data.data || []; 
 };
 

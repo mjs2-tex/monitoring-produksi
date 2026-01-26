@@ -53,6 +53,9 @@ export default function RootLayout({
               <div className="flex items-center gap-2">
                 <Link href="/" className="text-[9px] text-slate-400 uppercase font-bold">HOME</Link>
                 <Link href="/planing" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANING</Link>
+                <Link href="/planning-unroling" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING UNROL</Link>
+                <Link href="/planning-cwr" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING CWR</Link>
+                <Link href="/planning-inspect" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING INSPECT</Link>
               </div>
             </div>
           </div>

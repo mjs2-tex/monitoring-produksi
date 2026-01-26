@@ -17,7 +17,7 @@ interface FullScreenModalProps {
     fetchData?: any;
 }
 
-export default function BaruEditModalDyeing({ isOpen, onClose, title, masterState, masterData = [], fetchData }: FullScreenModalProps) {
+export default function BaruEditModalUnroling({ isOpen, onClose, title, masterState, masterData = [], fetchData }: FullScreenModalProps) {
     if (!isOpen) return null;
     const router = useRouter();
     const [activeTab, setActiveTab] = useState("hisaka 1");
@@ -59,25 +59,25 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             (d) => d.mesin === activeTab && d.tgl_planning === targetDate
         );
 
-        const newUrutan = sameGroup.length + 1;
+        const newUrutan = details.length + 1;
 
         const newRow = {
             id_temp: Date.now(),
-            mesin: activeTab,
             tgl_planning: targetDate,
             urutan: newUrutan, // Kolom NO di gambar
+            wo_ref: "",
             buyer: "",
-            item: "",
             kode_greige: "",
-            td: "",
+            item: "",
             batch: "",
             qty: 0,
-            warna: "",
-            proses: "",
-            roda: "",
-            berat_kain: 0,
-            ex: "",
-            keterangan: ""
+            uom: '',
+            warna: '',
+            tube: '',
+            act_qty: '',
+            no_mesin: '',
+            no_roda: '',
+            keterangan: '',
         };
 
         setDetails([...details, newRow]);
@@ -99,25 +99,25 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
 
     const updateDetailField = (idTemp: number, field: string, value: any) => {
         // Validasi Batch Unik
-        if (field === "batch" && value !== "") {
-            const isDuplicate = details.some(
-                (d) => d.batch.toLowerCase() === value.toLowerCase() && d.id_temp !== idTemp
-            );
-            if (isDuplicate) {
-                Swal.fire({
-                    icon: 'error', title: 'Batch Double!', text: `Batch ${value} sudah ada!`,
-                    timer: 3000, timerProgressBar: true, showConfirmButton: false, toast: true, position: 'top-end'
-                });
-                return;
-            }
-        }
+        // if (field === "batch" && value !== "") {
+        //     const isDuplicate = details.some(
+        //         (d) => d.batch.toLowerCase() === value.toLowerCase() && d.id_temp !== idTemp
+        //     );
+        //     if (isDuplicate) {
+        //         Swal.fire({
+        //             icon: 'error', title: 'Batch Double!', text: `Batch ${value} sudah ada!`,
+        //             timer: 3000, timerProgressBar: true, showConfirmButton: false, toast: true, position: 'top-end'
+        //         });
+        //         return;
+        //     }
+        // }
 
         let updated = details.map((d) => (d.id_temp === idTemp ? { ...d, [field]: value } : d));
         if (field === "tgl_planning") updated = reorder(updated);
         setDetails(updated);
     };
 
-    const filteredDetails = details.filter((d) => d.mesin === activeTab);
+    const filteredDetails = details;
 
     const validasiForm = async () => {
         const labels: any = {
@@ -182,20 +182,21 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                 details: details.map((item) => ({
                     id_temp: item.id_temp,
                     kode_planning: master.kode_planning,
+                    wo_ref: item.wo_ref,
                     buyer: item.buyer,
+                    kode_greige: item.kode_greige,
                     item: item.item,
-                    td: item.td,
                     batch: item.batch,
                     qty: item.qty,
+                    uom: item.uom,
                     warna: item.warna,
-                    proses: item.proses,
-                    roda: item.roda,
-                    berat_kain: item.berat_kain,
-                    ex: item.ex,
+                    tube: item.tube,
+                    act_qty: parseFloat(item.act_qty),
+                    no_mesin: parseFloat(item.no_mesin),
+                    no_roda: parseFloat(item.no_roda),
                     tgl_planning: item.tgl_planning,
-                    mesin: item.mesin,
-                    kode_greige: item.kode_greige,
                     urutan: item.urutan,
+                    keterangan: item.keterangan || '',
                 }))
             };
 
@@ -207,7 +208,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             });
 
             // 5. Hit API POST menggunakan Axios
-            const response = await axios.put('/api/planning', payload);
+            const response = await axios.put('/api/planning/unroling', payload);
 
             if (response.status === 201 || response.status === 200) {
                 await Swal.fire({
@@ -250,8 +251,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem("temp_master");
-                localStorage.removeItem("temp_details");
+                localStorage.removeItem("temp_master_unroling");
+                localStorage.removeItem("temp_details_unroling");
                 window.location.reload(); // Refresh halaman untuk reset state
             }
         });
@@ -296,20 +297,21 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                 details: details.map((item) => ({
                     id_temp: item.id_temp,
                     kode_planning: master.kode_planning,
+                    wo_ref: item.wo_ref,
                     buyer: item.buyer,
+                    kode_greige: item.kode_greige,
                     item: item.item,
-                    td: item.td,
                     batch: item.batch,
                     qty: item.qty,
+                    uom: item.uom,
                     warna: item.warna,
-                    proses: item.proses,
-                    roda: item.roda,
-                    berat_kain: item.berat_kain,
-                    ex: item.ex,
+                    tube: item.tube,
+                    act_qty: parseFloat(item.act_qty),
+                    no_mesin: parseFloat(item.no_mesin),
+                    no_roda: parseFloat(item.no_roda),
                     tgl_planning: item.tgl_planning,
-                    mesin: item.mesin,
-                    kode_greige: item.kode_greige,
                     urutan: item.urutan,
+                    keterangan: item.keterangan || '',
                 }))
             };
 
@@ -321,7 +323,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             });
 
             // 5. Hit API POST menggunakan Axios
-            const response = await axios.post('/api/planning', payload);
+            const response = await axios.post('/api/planning/unroling', payload);
 
             if (response.status === 201 || response.status === 200) {
                 await Swal.fire({
@@ -431,8 +433,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
         loadData();
         if (masterState === "BARU") {
 
-            const savedMaster = localStorage.getItem("temp_master");
-            const savedDetails = localStorage.getItem("temp_details");
+            const savedMaster = localStorage.getItem("temp_master_unroling");
+            const savedDetails = localStorage.getItem("temp_details_unroling");
 
             if (savedMaster) {
                 // console.log('savedMaster', savedMaster);
@@ -444,7 +446,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                     tgl_planning_akhir: temp.tgl_planning_akhir || "",
                     status: temp.status || "draft",
                 })
-                generateNomor('DYEING');
+                generateNomor('Unroling');
             };
             if (savedDetails) setDetails(JSON.parse(savedDetails));
         } else {
@@ -458,8 +460,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
     useEffect(() => {
         if (masterState === "BARU") {
             const timeoutId = setTimeout(() => {
-                localStorage.setItem("temp_master", JSON.stringify(master));
-                localStorage.setItem("temp_details", JSON.stringify(details));
+                localStorage.setItem("temp_master_unroling", JSON.stringify(master));
+                localStorage.setItem("temp_details_unroling", JSON.stringify(details));
                 console.log("Progress disimpan otomatis ke local storage...");
             }, 1000); // Simpan 1 detik setelah user berhenti berinteraksi
 
@@ -526,7 +528,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                     {/* SECTION DETAIL */}
                     <div className="flex-1 flex flex-col h-[calc(100vh-200px)] ">
                         <div className="flex gap-1 ml-2 overflow-x-auto no-scrollbar">
-                            {["hisaka 1", "hisaka 2", "hisaka 3", "hisaka 4", "samil 1", "samil 2", "samil 3"].map((tab) => (
+                            {["UNROLLING"].map((tab) => (
                                 <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-2 rounded-t-xl border-t border-l border-r text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeTab === tab ? "bg-white text-blue-600 shadow-sm" : "bg-slate-200 text-slate-500"}`}>
                                     {tab}
                                 </button>
@@ -545,18 +547,19 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                                         <tr className="text-slate-500 uppercase font-black">
                                             <th className="px-2 py-3 border-b border-slate-200 text-center w-8">NO</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left w-24">TGL</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-left">WO. REFF</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">BUYER</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">ITEM</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">KODE GREIGE</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">TD</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-left">ITEM</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">BATCH</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left w-16">QTY</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-left">UOM</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">WARNA</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">PROSES</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left w-12">RODA</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">BERAT</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left w-12">EX</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">KETERANGAN</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-left w-12">TUBE</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-center">ACT <br /> QTY</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-center w-12">NO <br /> MESIN</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-center">NO <br /> RODA</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-center">KETERANGAN</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-center"></th>
                                         </tr>
                                     </thead>
@@ -564,18 +567,18 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                                         {filteredDetails.map((row) => (
                                             <tr key={row.id_temp} className="hover:bg-blue-50/30 transition-colors">
                                                 <td className="px-2 text-center font-bold text-blue-600">{row.urutan}</td>
-                                                <td className="px-1"><input type="date" value={row.tgl_planning} className="w-full bg-transparent p-1 focus:outline-none text-[10px]" onChange={(e) => updateDetailField(row.id_temp, 'tgl_planning', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.buyer} onChange={(e) => updateDetailField(row.id_temp, 'buyer', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.item} onChange={(e) => updateDetailField(row.id_temp, 'item', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.kode_greige} onChange={(e) => updateDetailField(row.id_temp, 'kode_greige', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.td} onChange={(e) => updateDetailField(row.id_temp, 'td', e.target.value)} /></td>
+                                                <td className="px-1"><input type="date" value={row.tgl_planning || ''} className="w-full bg-transparent p-1 focus:outline-none text-[10px]" onChange={(e) => updateDetailField(row.id_temp, 'tgl_planning', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.wo_ref || ''} onChange={(e) => updateDetailField(row.id_temp, 'wo_ref', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.buyer || ''} onChange={(e) => updateDetailField(row.id_temp, 'buyer', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.kode_greige || ''} onChange={(e) => updateDetailField(row.id_temp, 'kode_greige', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.item || ''} onChange={(e) => updateDetailField(row.id_temp, 'item', e.target.value)} /></td>
                                                 <td className="px-1 border-b border-slate-200">
                                                     <div className="flex items-center group bg-white rounded border border-transparent focus-within:border-blue-500 transition-all">
                                                         <input
                                                             type="text"
                                                             className="w-full bg-transparent p-1 focus:outline-none font-bold text-slate-700 text-sm"
                                                             placeholder="..."
-                                                            value={row.batch}
+                                                            value={row.batch || ''}
                                                             onChange={(e) => updateDetailField(row.id_temp, 'batch', e.target.value)}
                                                         />
                                                         <button
@@ -608,13 +611,14 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
 
 
                                                 </td>
-                                                <td className="px-1"><input type="number" className="w-full bg-transparent p-1 focus:outline-none" value={row.qty} onChange={(e) => updateDetailField(row.id_temp, 'qty', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.warna} onChange={(e) => updateDetailField(row.id_temp, 'warna', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.proses} onChange={(e) => updateDetailField(row.id_temp, 'proses', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.roda} onChange={(e) => updateDetailField(row.id_temp, 'roda', e.target.value)} /></td>
-                                                <td className="px-1"><input type="number" className="w-full bg-transparent p-1 focus:outline-none" value={row.berat_kain} onChange={(e) => updateDetailField(row.id_temp, 'berat_kain', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.ex} onChange={(e) => updateDetailField(row.id_temp, 'ex', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.keterangan} onChange={(e) => updateDetailField(row.id_temp, 'keterangan', e.target.value)} /></td>
+                                                <td className="px-1"><input type="number" className="w-full bg-transparent p-1 focus:outline-none" value={row.qty || ''} onChange={(e) => updateDetailField(row.id_temp, 'qty', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.uom || ''} onChange={(e) => updateDetailField(row.id_temp, 'uom', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.warna || ''} onChange={(e) => updateDetailField(row.id_temp, 'warna', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.tube || ''} onChange={(e) => updateDetailField(row.id_temp, 'tube', e.target.value)} /></td>
+                                                <td className="px-1"><input type="number" className="w-full bg-transparent p-1 focus:outline-none" value={row.act_qty || ''} onChange={(e) => updateDetailField(row.id_temp, 'act_qty', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.no_mesin || ''} onChange={(e) => updateDetailField(row.id_temp, 'no_mesin', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.no_roda || ''} onChange={(e) => updateDetailField(row.id_temp, 'no_roda', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.keterangan || ''} onChange={(e) => updateDetailField(row.id_temp, 'keterangan', e.target.value)} /></td>
                                                 <td className="px-1 text-center">
                                                     <button onClick={() => removeRow(row.id_temp)} className="text-red-400 hover:text-red-600">×</button>
                                                 </td>
@@ -661,15 +665,22 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
 
                                 let updated = details.map((d) => (d.id_temp === selectedRow.id_temp ? {
                                     ...selectedRow,
-                                    batch: val.no_batch,
+                                    wo_ref: val.no_om,
                                     buyer: val.nama_customer,
-                                    item: val.nama_produk,
-                                    td: val.no_td,
-                                    warna: val.warna_name,
                                     kode_greige: val.kode_greige,
-                                    // proses: val.nama_proses,
-                                    berat_kain: val.berat_roda || 0,
-                                    qty: val.qty_yard
+                                    item: val.nama_produk,
+                                    batch: val.no_batch,
+                                    qty: val.qty_yard,
+                                    warna: val.warna_name,
+                                    // batch: val.no_batch,
+                                    // buyer: val.nama_customer,
+                                    // item: val.nama_produk,
+                                    // td: val.no_td,
+                                    // warna: val.warna_name,
+                                    // kode_greige: val.kode_greige,
+                                    // // proses: val.nama_proses,
+                                    // berat_kain: val.berat_roda || 0,
+                                    // qty: val.qty_yard
                                 } : d));
                                 setDetails(updated);
                                 setIsModalOpen(false);

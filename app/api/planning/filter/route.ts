@@ -45,7 +45,7 @@ export async function GET(req: Request) {
       query += ` AND m.kode_planning LIKE $${values.length}`;
     }
 
-    query += ` ORDER BY d.mesin ASC, d.urutan ASC`;
+    query += ` ORDER BY m.kode_planning ASC, d.mesin ASC, d.urutan ASC`;
 
     const result = await client.query(query, values);
 

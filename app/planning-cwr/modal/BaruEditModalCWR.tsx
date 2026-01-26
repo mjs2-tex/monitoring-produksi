@@ -17,10 +17,10 @@ interface FullScreenModalProps {
     fetchData?: any;
 }
 
-export default function BaruEditModalDyeing({ isOpen, onClose, title, masterState, masterData = [], fetchData }: FullScreenModalProps) {
+export default function BaruEditModalCWR({ isOpen, onClose, title, masterState, masterData = [], fetchData }: FullScreenModalProps) {
     if (!isOpen) return null;
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState("hisaka 1");
+    const [activeTab, setActiveTab] = useState("CWR");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [master, setMaster] = useState({
         kode_planning: "",
@@ -77,7 +77,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             roda: "",
             berat_kain: 0,
             ex: "",
-            keterangan: ""
+            keterangan: "",
+            uom: '',
         };
 
         setDetails([...details, newRow]);
@@ -196,6 +197,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                     mesin: item.mesin,
                     kode_greige: item.kode_greige,
                     urutan: item.urutan,
+                    uom: item.uom,
                 }))
             };
 
@@ -207,7 +209,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             });
 
             // 5. Hit API POST menggunakan Axios
-            const response = await axios.put('/api/planning', payload);
+            const response = await axios.put('/api/planning/cwr', payload);
 
             if (response.status === 201 || response.status === 200) {
                 await Swal.fire({
@@ -220,8 +222,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                 await fetchData();
                 onClose();
                 // // 6. Cleanup & Redirect
-                // localStorage.removeItem("temp_master");
-                // localStorage.removeItem("temp_details");
+                // localStorage.removeItem("temp_master_cwr");
+                // localStorage.removeItem("temp_details_cwr");
                 // router.push("/planning");
             }
 
@@ -250,8 +252,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                localStorage.removeItem("temp_master");
-                localStorage.removeItem("temp_details");
+                localStorage.removeItem("temp_master_cwr");
+                localStorage.removeItem("temp_details_cwr");
                 window.location.reload(); // Refresh halaman untuk reset state
             }
         });
@@ -310,6 +312,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                     mesin: item.mesin,
                     kode_greige: item.kode_greige,
                     urutan: item.urutan,
+                     uom: item.uom,
                 }))
             };
 
@@ -321,7 +324,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
             });
 
             // 5. Hit API POST menggunakan Axios
-            const response = await axios.post('/api/planning', payload);
+            const response = await axios.post('/api/planning/cwr', payload);
 
             if (response.status === 201 || response.status === 200) {
                 await Swal.fire({
@@ -334,8 +337,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                 await fetchData();
                 onClose();
                 // // 6. Cleanup & Redirect
-                // localStorage.removeItem("temp_master");
-                // localStorage.removeItem("temp_details");
+                // localStorage.removeItem("temp_master_cwr");
+                // localStorage.removeItem("temp_details_cwr");
                 // router.push("/planning");
             }
 
@@ -431,8 +434,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
         loadData();
         if (masterState === "BARU") {
 
-            const savedMaster = localStorage.getItem("temp_master");
-            const savedDetails = localStorage.getItem("temp_details");
+            const savedMaster = localStorage.getItem("temp_master_cwr");
+            const savedDetails = localStorage.getItem("temp_details_cwr");
 
             if (savedMaster) {
                 // console.log('savedMaster', savedMaster);
@@ -444,7 +447,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                     tgl_planning_akhir: temp.tgl_planning_akhir || "",
                     status: temp.status || "draft",
                 })
-                generateNomor('DYEING');
+                generateNomor('CWR');
             };
             if (savedDetails) setDetails(JSON.parse(savedDetails));
         } else {
@@ -458,8 +461,8 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
     useEffect(() => {
         if (masterState === "BARU") {
             const timeoutId = setTimeout(() => {
-                localStorage.setItem("temp_master", JSON.stringify(master));
-                localStorage.setItem("temp_details", JSON.stringify(details));
+                localStorage.setItem("temp_master_cwr", JSON.stringify(master));
+                localStorage.setItem("temp_details_cwr", JSON.stringify(details));
                 console.log("Progress disimpan otomatis ke local storage...");
             }, 1000); // Simpan 1 detik setelah user berhenti berinteraksi
 
@@ -526,7 +529,7 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                     {/* SECTION DETAIL */}
                     <div className="flex-1 flex flex-col h-[calc(100vh-200px)] ">
                         <div className="flex gap-1 ml-2 overflow-x-auto no-scrollbar">
-                            {["hisaka 1", "hisaka 2", "hisaka 3", "hisaka 4", "samil 1", "samil 2", "samil 3"].map((tab) => (
+                            {["CWR", "SOLFENA"].map((tab) => (
                                 <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-2 rounded-t-xl border-t border-l border-r text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeTab === tab ? "bg-white text-blue-600 shadow-sm" : "bg-slate-200 text-slate-500"}`}>
                                     {tab}
                                 </button>
@@ -547,15 +550,11 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                                             <th className="px-2 py-3 border-b border-slate-200 text-left w-24">TGL</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">BUYER</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">ITEM</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">KODE GREIGE</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">TD</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">BATCH</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left w-16">QTY</th>
+                                            <th className="px-2 py-3 border-b border-slate-200 text-left w-12">UOM</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">WARNA</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">PROSES</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left w-12">RODA</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left">BERAT</th>
-                                            <th className="px-2 py-3 border-b border-slate-200 text-left w-12">EX</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-left">KETERANGAN</th>
                                             <th className="px-2 py-3 border-b border-slate-200 text-center"></th>
                                         </tr>
@@ -567,8 +566,6 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
                                                 <td className="px-1"><input type="date" value={row.tgl_planning} className="w-full bg-transparent p-1 focus:outline-none text-[10px]" onChange={(e) => updateDetailField(row.id_temp, 'tgl_planning', e.target.value)} /></td>
                                                 <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.buyer} onChange={(e) => updateDetailField(row.id_temp, 'buyer', e.target.value)} /></td>
                                                 <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.item} onChange={(e) => updateDetailField(row.id_temp, 'item', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.kode_greige} onChange={(e) => updateDetailField(row.id_temp, 'kode_greige', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" placeholder="..." value={row.td} onChange={(e) => updateDetailField(row.id_temp, 'td', e.target.value)} /></td>
                                                 <td className="px-1 border-b border-slate-200">
                                                     <div className="flex items-center group bg-white rounded border border-transparent focus-within:border-blue-500 transition-all">
                                                         <input
@@ -609,11 +606,9 @@ export default function BaruEditModalDyeing({ isOpen, onClose, title, masterStat
 
                                                 </td>
                                                 <td className="px-1"><input type="number" className="w-full bg-transparent p-1 focus:outline-none" value={row.qty} onChange={(e) => updateDetailField(row.id_temp, 'qty', e.target.value)} /></td>
+                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.uom} onChange={(e) => updateDetailField(row.id_temp, 'uom', e.target.value)} /></td>
                                                 <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.warna} onChange={(e) => updateDetailField(row.id_temp, 'warna', e.target.value)} /></td>
                                                 <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.proses} onChange={(e) => updateDetailField(row.id_temp, 'proses', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.roda} onChange={(e) => updateDetailField(row.id_temp, 'roda', e.target.value)} /></td>
-                                                <td className="px-1"><input type="number" className="w-full bg-transparent p-1 focus:outline-none" value={row.berat_kain} onChange={(e) => updateDetailField(row.id_temp, 'berat_kain', e.target.value)} /></td>
-                                                <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.ex} onChange={(e) => updateDetailField(row.id_temp, 'ex', e.target.value)} /></td>
                                                 <td className="px-1"><input type="text" className="w-full bg-transparent p-1 focus:outline-none" value={row.keterangan} onChange={(e) => updateDetailField(row.id_temp, 'keterangan', e.target.value)} /></td>
                                                 <td className="px-1 text-center">
                                                     <button onClick={() => removeRow(row.id_temp)} className="text-red-400 hover:text-red-600">×</button>
