@@ -56,6 +56,7 @@ export default function RootLayout({
                 <Link href="/planning-unroling" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING UNROL</Link>
                 <Link href="/planning-cwr" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING CWR</Link>
                 <Link href="/planning-inspect" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING INSPECT</Link>
+                <Link href="/planning-stenter" className="text-[10px] text-slate-600 font-black uppercase tracking-wider">PLANNING STENTER</Link>
               </div>
             </div>
           </div>

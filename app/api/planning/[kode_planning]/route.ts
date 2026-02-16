@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import {poolSecond} from "@/lib/db";
+import { poolSecond } from "@/lib/db";
 import moment from "moment";
 
 export async function GET(
@@ -37,6 +37,31 @@ export async function GET(
     };
 
     return NextResponse.json({ data }, { status: 200 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ kode_planning: string }> }
+) {
+  const { kode_planning } = await params;
+  try {
+    // Hapus detail planning terlebih dahulu
+    await poolSecond.query(
+      "DELETE FROM tb_d_planning WHERE kode_planning = $1",
+      [kode_planning]
+    );
+    // Hapus master planning
+    const res = await poolSecond.query(
+      "DELETE FROM tb_m_planning WHERE kode_planning = $1 RETURNING *",
+      [kode_planning]
+    );
+    if (res.rows.length === 0) {
+      return NextResponse.json({ message: "Data tidak ditemukan" }, { status: 404 });
+    }
+    return NextResponse.json({ message: "Berhasil dihapus", data: res.rows[0] }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

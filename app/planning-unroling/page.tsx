@@ -11,6 +11,8 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import BaruEditModalUnroling from "./modal/BaruEditModalUnroling";
+import UnrollingReport from "./fungsiprintunroll";
+import axios from "axios";
 
 type PlanningMaster = {
   kode_planning: string;
@@ -32,6 +34,8 @@ export default function PlanningPage() {
   const [showModal, setShowModal] = useState(false);
   const [masterState, setMasterState] = useState("BARU");
   const [masterData, setMasterData] = useState([]);
+  const [selectedPrintKode, setSelectedPrintKode] = useState<string | null>(null);
+  const [selectedPrintALL, setSelectedPrintALL] = useState<any>(null);
 
   const fetchData = async () => {
     try {
@@ -70,14 +74,63 @@ export default function PlanningPage() {
       cell: (info) => {
         const status = info.getValue()?.toLowerCase();
         return (
-          <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold ${
-            status === 'done' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-          }`}>
+          <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold ${status === 'done' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+            }`}>
             {status}
           </span>
         );
       },
     }),
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }: { row: any }) => (
+        <div className="flex gap-2">
+          {/* Delete Button */}
+          <button
+            title="Delete"
+            className="p-1 rounded hover:bg-red-100 text-red-600"
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (confirm("Yakin ingin menghapus data ini?")) {
+                try {
+                  const res = await fetch(`/api/planning/${row.original.kode_planning}`, {
+                    method: "DELETE",
+                  });
+                  const json = await res.json();
+                  if (res.ok) {
+                    fetchData();
+                  } else {
+                    alert(json.message || "Gagal menghapus data");
+                  }
+                } catch (err) {
+                  alert("Gagal menghapus data");
+                }
+              }
+            }}
+          >
+            {/* Trash Icon */}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7m-5 4v6m-4-6v6m9-10V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2m12 0H5" />
+            </svg>
+          </button>
+          {/* Print Button */}
+          <button
+            title="Print"
+            className="p-1 rounded hover:bg-blue-100 text-blue-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              printPlanning(row.original.kode_planning);
+            }}
+          >
+            {/* Printer Icon */}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9V4a2 2 0 012-2h8a2 2 0 012 2v5M6 18h12a2 2 0 002-2v-5a2 2 0 00-2-2H6a2 2 0 00-2 2v5a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
+      ),
+    },
   ];
 
   const table = useReactTable({
@@ -90,7 +143,7 @@ export default function PlanningPage() {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-    const getOneDetail = async (kodePlanning: string) => {
+  const getOneDetail = async (kodePlanning: string) => {
     try {
       const res = await fetch(`/api/planning/${kodePlanning}`);
       const json = await res.json();
@@ -102,12 +155,30 @@ export default function PlanningPage() {
     }
   };
 
+  // Fungsi print dummy
+  const printPlanning = async (kodePlanning: string) => {
+    const response = await axios.get(`/api/planning/${kodePlanning}`);
+    const { data } = response.data;
+    setSelectedPrintKode(kodePlanning);
+
+    setSelectedPrintALL(data);
+    setTimeout(() => {
+      window.print();
+      setSelectedPrintKode(null);
+    }, 150);
+  };
+
   return (
     <div className="w-full h-[calc(100vh-70px)] flex flex-col p-4 gap-2 bg-slate-50 text-slate-800">
+      {selectedPrintKode && (
+        <div className="hidden print:block">
+          <UnrollingReport kodePlanning={selectedPrintKode} all={selectedPrintALL} />
+        </div>
+      )}
       {showModal && (
         <BaruEditModalUnroling
           isOpen={showModal}
-          onClose={() => {setShowModal(false); setMasterData([]);}}
+          onClose={() => { setShowModal(false); setMasterData([]); }}
           title="Tambah Data Planning Unroling"
           masterState={masterState}
           masterData={masterData}
@@ -115,9 +186,9 @@ export default function PlanningPage() {
         />
       )}
       <h2 className="text-2xl font-bold italic">| Planning Unroling</h2>
-      
+
       <div className="w-full h-full bg-white rounded-2xl border border-slate-200 p-5 flex flex-col shadow-sm overflow-hidden">
-        
+
         {/* Header: Search & Add Button */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4">
           <div className="relative w-full max-w-sm">
@@ -136,7 +207,7 @@ export default function PlanningPage() {
             />
           </div>
 
-          <button 
+          <button
             onClick={() => {
               // router.push("/planing/add")
               setMasterState("BARU");
@@ -179,7 +250,7 @@ export default function PlanningPage() {
                   table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
-                      onDoubleClick={async() => await getOneDetail(row.original.kode_planning)} 
+                      onDoubleClick={async () => await getOneDetail(row.original.kode_planning)}
                       className="hover:bg-blue-50/50 cursor-pointer transition-colors group"
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -207,7 +278,7 @@ export default function PlanningPage() {
             Total {data.length} records found
           </div>
           <div className="flex items-center gap-1">
-            <button 
+            <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               className="p-2 border border-slate-200 rounded-lg disabled:opacity-30 hover:bg-slate-50 transition-all text-slate-600"
@@ -216,14 +287,14 @@ export default function PlanningPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            
+
             <div className="flex items-center gap-1 mx-2">
-               <span className="text-sm font-bold text-slate-700">{table.getState().pagination.pageIndex + 1}</span>
-               <span className="text-slate-300">/</span>
-               <span className="text-sm text-slate-500">{table.getPageCount()}</span>
+              <span className="text-sm font-bold text-slate-700">{table.getState().pagination.pageIndex + 1}</span>
+              <span className="text-slate-300">/</span>
+              <span className="text-sm text-slate-500">{table.getPageCount()}</span>
             </div>
 
-            <button 
+            <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               className="p-2 border border-slate-200 rounded-lg disabled:opacity-30 hover:bg-slate-50 transition-all text-slate-600"

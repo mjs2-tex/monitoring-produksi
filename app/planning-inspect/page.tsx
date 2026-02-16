@@ -11,6 +11,8 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import BaruEditModalINSPECT from "./modal/BaruEditModalINSPECT";
+import InspectReport from "./fungsiprintunroll";
+import axios from "axios";
 
 type PlanningMaster = {
   kode_planning: string;
@@ -32,6 +34,8 @@ export default function PlanningPage() {
   const [showModal, setShowModal] = useState(false);
   const [masterState, setMasterState] = useState("BARU");
   const [masterData, setMasterData] = useState([]);
+  const [selectedPrintKode, setSelectedPrintKode] = useState<string | null>(null);
+    const [selectedPrintALL, setSelectedPrintALL] = useState<any>(null);
 
   const fetchData = async () => {
     try {
@@ -78,6 +82,56 @@ export default function PlanningPage() {
         );
       },
     }),
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row } : {row : any}) => (
+        <div className="flex gap-2">
+          {/* Delete Button */}
+          <button
+            title="Delete"
+            className="p-1 rounded hover:bg-red-100 text-red-600"
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (confirm("Yakin ingin menghapus data ini?")) {
+                try {
+                  const res = await fetch(`/api/planning/${row.original.kode_planning}`, {
+                    method: "DELETE",
+                  });
+                  const json = await res.json();
+                  if (res.ok) {
+                    fetchData();
+                  } else {
+                    alert(json.message || "Gagal menghapus data");
+                  }
+                } catch (err) {
+                  alert("Gagal menghapus data");
+                }
+              }
+            }}
+          >
+            {/* Trash Icon */}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7m-5 4v6m-4-6v6m9-10V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2m12 0H5" />
+            </svg>
+          </button>
+          {/* Print Button */}
+          <button
+            title="Print"
+            className="p-1 rounded hover:bg-blue-100 text-blue-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              printPlanning(row.original.kode_planning);
+            }}
+          >
+            {/* Printer Icon */}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9V4a2 2 0 012-2h8a2 2 0 012 2v5M6 18h12a2 2 0 002-2v-5a2 2 0 00-2-2H6a2 2 0 00-2 2v5a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
+      ),
+    },
   ];
 
   const table = useReactTable({
@@ -102,8 +156,26 @@ export default function PlanningPage() {
     }
   };
 
+  // Fungsi print dummy
+  const printPlanning = async (kodePlanning: string) => {
+    const response = await axios.get(`/api/planning/${kodePlanning}`);
+    const { data } = response.data;
+    setSelectedPrintKode(kodePlanning);
+
+    setSelectedPrintALL(data);
+    setTimeout(() => {
+      window.print();
+      setSelectedPrintKode(null);
+    }, 150);
+  };
+
   return (
     <div className="w-full h-[calc(100vh-70px)] flex flex-col p-4 gap-2 bg-slate-50 text-slate-800">
+      {selectedPrintKode && (
+              <div className="hidden print:block">
+                <InspectReport kodePlanning={selectedPrintKode} all={selectedPrintALL} />
+              </div>
+            )}
       {showModal && (
         <BaruEditModalINSPECT
           isOpen={showModal}
